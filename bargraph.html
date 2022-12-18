@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>INCOME RATE OF MALE AND FEMALE</title>
+    <script src="echarts.js"></script>
+</head>
+<center>
+<body>
+<div id="title"><b>INCOME RATE OF MALE AND FEMALE</b></div>
+<hr>
+<div id="main" style="width: 600px;height:400px;"></div>
+<script>
+    const dom = document.querySelector('#main')
+    const myChart = echarts.init(dom);
+    const option = {
+        series: [
+            {
+                name: 'Male',
+                type: 'bar',
+                data: [122274.1666666667, 116307.0176991151, 111363.3033268102, 122387.6279069767, 113404.5563552833]
+            },
+            {
+                name: 'Female',
+                type: 'bar',
+                data: [118429.8780487805, 113914.1428571429, 112056.4884792627, 119146.1785714286, 113088.6872556685]
+            }
+        ],
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        legend:
+            {
+                data: ['Male','Female'],
+                icon:'rect'
+         },
+        xAxis: {
+            data: ['Eskimo','Islander','Black','Other','White'],
+            splitArea: {
+                show: true
+            }},
+        yAxis: {
+            splitArea: {
+                show: true
+            }
+        }
+    };
+        myChart.setOption(option);
+</script>
+</body>
+</center>
+</html>

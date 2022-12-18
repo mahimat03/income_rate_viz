@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartogram</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        main{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+            flex-direction: column;
+        }
+        .caption{
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            font-family: sans-serif;
+            font-size: 22pt;
+        }
+      .control{
+          margin-top: 10px;
+      }
+      .control .label{
+      }
+      #headings{
+          text-align: center;
+          -moz-text-size-adjust: auto;
+      }
+    </style>
+</head>
+<body>
+
+<main>
+    <div id="tooltip"></div>
+    <div class="caption">
+        <b> COUNTY WISE INCOME</b></div>
+        <div class="headings">
+            <center>
+            <h6>AVERAGE INCOME=114158 </h6>
+            <h6>Skyblue color represents data that is less than the average income rate</h6>
+            <h6>Red color represents data that is more than the average income rate</h6>
+            <h6>Grey color that display has no data</h6></center>
+        </div>
+
+
+
+    <div class="control">
+<!--        <button name="change" id="btnSwitch" class="btn btn-success" style="width: 200px">Choropleth</button>-->
+    </div>
+    <div id="canvas">
+    </div>
+</main>
+
+    <center>
+
+    <script>
+        let gop_color = "#de1313";
+        let dem_color= "#25decd";
+        let income_data = "adult.csv"
+        let geoJson = "Cartogram.json";
+        const NormalTopoJSON = "counties.json"
+        Promise.all(
+            [
+                d3.json(geoJson),
+                d3.csv(income_data),
+                d3.json(NormalTopoJSON)
+            ]
+            ,d3.autoType()).then(MapGenerator);
+        function MapGenerator(data)
+        {
+            const svg = d3.selectAll('#canvas')
+                .append("svg")
+                .attr("width","100vw")
+                .attr("height","100vh")
+                .attr("viewBox","0 0 1000 800")
+
+
+
+
+            const tooltip=d3.select("#tooltip");
+            const projection = d3.geoAlbersUsa()
+            const geo_generator = d3.geoPath().projection(projection);
+            const geoJsonCartoGram = data[0].features;
+            const geoJsonNormal = data[2].features
+            console.log(geoJsonNormal)
+            let fin_data = d3.group(data[1],d=>d.county_fips);
+            function update(){
+                mapContainer
+                    .transition()
+                    .duration(1000)
+                    .attr("d",d=>geo_generator(d))
+                    .attr("fill",d=>{
+                            try{
+                                const {income,median_income} =  fin_data.get(d.properties.GEOID)[0]
+                                return income>median_income?dem_color: gop_color;
+                            }
+                            catch (e){
+                                return "gray";
+                            }
+                            })
+                    .attr("fill-opacity", d=> {
+                        try{
+                            const {income,median_income} =  fin_data.get(d.properties.GEOID)[0]
+                            return income>median_income?income:median_income;
+                        }
+                        catch (e){
+                            return .5;
+                        }
+                    })
+                    .attr("stroke","black")
+                    .attr("stroke-opacity",".3")
+                    .attr("stroke-width","1")
+            }
+            let mapContainer =svg.selectAll('.g')
+                .data(geoJsonNormal)
+                .join("path")
+            update()
+            const button = document.querySelector('#btnSwitch')
+            button.onclick=
+                function(e){
+                    let dt = "";
+                    if(e.target.innerText==="Choropleth"){
+                        dt = geoJsonCartoGram
+                        e.target.innerText ="Cartogram"
+                    }
+                    else{
+                        dt = geoJsonNormal
+                        e.target.innerText ="Choropleth"
+                    }
+                    mapContainer = mapContainer
+                        .data(dt)
+                        .join("path");
+                    update()
+            }
+        }
+    </script>
+</body>
+</html>
